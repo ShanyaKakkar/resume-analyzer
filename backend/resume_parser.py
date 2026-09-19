@@ -48,3 +48,41 @@ def extract_text(path):
     if suffix == ".docx":
         return extract_text_from_docx(path)
     raise ValueError("Only PDF and DOCX files are supported")
+# ---------- Hidden links (clickable words like "LinkedIn") ----------
+
+def extract_links_from_pdf(path):
+    links = []
+    with pdfplumber.open(path) as pdf:
+        for page in pdf.pages:
+            for link in page.hyperlinks:
+                uri = link.get("uri")
+                if uri and uri not in links:
+                    links.append(uri)
+    return links
+
+
+def extract_links_from_docx(path):
+    document = docx.Document(path)
+    parts = [document.part]
+    for section in document.sections:
+        if not section.header.is_linked_to_previous:
+            parts.append(section.header.part)
+        if not section.footer.is_linked_to_previous:
+            parts.append(section.footer.part)
+
+    links = []
+    for part in parts:
+        for rel in part.rels.values():
+            if rel.reltype.endswith("/hyperlink") and rel.is_external:
+                if rel.target_ref not in links:
+                    links.append(rel.target_ref)
+    return links
+
+
+def extract_links(path):
+    suffix = Path(path).suffix.lower()
+    if suffix == ".pdf":
+        return extract_links_from_pdf(path)
+    if suffix == ".docx":
+        return extract_links_from_docx(path)
+    raise ValueError("Only PDF and DOCX files are supported")

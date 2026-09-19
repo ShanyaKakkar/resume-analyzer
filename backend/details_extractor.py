@@ -53,13 +53,14 @@ def guess_name(header_text):
     return None
 
 
-def extract_contact_details(header_text, full_text=""):
-    """Look in the header first. If something is missing there,
-    look in the whole resume (some templates put contacts in a sidebar)."""
+def extract_contact_details(header_text, full_text="", links=None):
+    """Look in the header first, then the whole resume, and finally in the
+    hidden link addresses (clickable words like "LinkedIn")."""
+    links_text = "\n".join(links or [])
     return {
         "name": guess_name(header_text),
-        "email": first_match(EMAIL_RE, header_text, full_text),
-        "phone": clean_phone(first_match(PHONE_RE, header_text, full_text)),
-        "linkedin": add_https(first_match(LINKEDIN_RE, header_text, full_text)),
-        "github": add_https(first_match(GITHUB_RE, header_text, full_text)),
+        "email": first_match(EMAIL_RE, header_text, full_text, links_text),
+        "phone": clean_phone(first_match(PHONE_RE, header_text, full_text, links_text)),
+        "linkedin": add_https(first_match(LINKEDIN_RE, header_text, full_text, links_text)),
+        "github": add_https(first_match(GITHUB_RE, header_text, full_text, links_text)),
     }
