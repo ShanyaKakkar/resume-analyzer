@@ -1,0 +1,61 @@
+{
+  "winner": "Random Forest",
+  "feature_set": "match",
+  "features": [
+    "tfidf",
+    "semantic",
+    "skill_coverage",
+    "preferred_coverage",
+    "keyword_coverage"
+  ],
+  "classes": [
+    "No Fit",
+    "Potential Fit",
+    "Good Fit"
+  ],
+  "points": [
+    0,
+    50,
+    100
+  ],
+  "results": [
+    {
+      "model": "Logistic Regression",
+      "grouped_cv_f1": 0.4203690296,
+      "test_accuracy": 0.3888573053,
+      "test_f1_macro": 0.3759891686,
+      "test_log_loss": 1.1409733426,
+      "test_spearman": 0.0614811314,
+      "best_settings": {
+        "logisticregression__C": 1
+      }
+    },
+    {
+      "model": "Random Forest",
+      "grouped_cv_f1": 0.4216313384,
+      "test_accuracy": 0.3916998294,
+      "test_f1_macro": 0.382750332,
+      "test_log_loss": 1.104935513,
+      "test_spearman": 0.1013116377,
+      "best_settings": {
+        "max_depth": 5,
+        "min_samples_leaf": 40,
+        "n_estimators": 200
+      }
+    },
+    {
+      "model": "XGBoost",
+      "grouped_cv_f1": 0.4174625984,
+      "test_accuracy": 0.3871517908,
+      "test_f1_macro": 0.379453581,
+      "test_log_loss": 1.1186326029,
+      "test_spearman": 0.107726178,
+      "best_settings": {
+        "learning_rate": 0.03,
+        "max_depth": 2,
+        "min_child_weight": 5,
+        "n_estimators": 300
+      }
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "winner": "Logistic Regression",
+  "classes": [
+    "ACCOUNTANT",
+    "ADVOCATE",
+    "AGRICULTURE",
+    "APPAREL",
+    "ARTS",
+    "AUTOMOBILE",
+    "AVIATION",
+    "BANKING",
+    "BPO",
+    "BUSINESS-DEVELOPMENT",
+    "CHEF",
+    "CONSTRUCTION",
+    "CONSULTANT",
+    "DESIGNER",
+    "DIGITAL-MEDIA",
+    "ENGINEERING",
+    "FINANCE",
+    "FITNESS",
+    "HEALTHCARE",
+    "HR",
+    "INFORMATION-TECHNOLOGY",
+    "PUBLIC-RELATIONS",
+    "SALES",
+    "TEACHER"
+  ],
+  "results": [
+    {
+      "model": "Logistic Regression",
+      "cv_accuracy": 0.4216666667,
+      "cv_f1_macro": 0.3813087791,
+      "test_accuracy": 0.4,
+      "test_f1_macro": 0.3515295179,
+      "test_top3_accuracy": 0.6111111111,
+      "best_settings": {
+        "logisticregression__C": 3
+      }
+    },
+    {
+      "model": "Random Forest",
+      "cv_accuracy": 0.3833333333,
+      "cv_f1_macro": 0.3300820063,
+      "test_accuracy": 0.4022222222,
+      "test_f1_macro": 0.3425396038,
+      "test_top3_accuracy": 0.6266666667,
+      "best_settings": {
+        "randomforestclassifier__max_features": "sqrt"
+      }
+    },
+    {
+      "model": "XGBoost",
+      "cv_accuracy": 0.3288888889,
+      "cv_f1_macro": 0.2979539271,
+      "test_accuracy": 0.3488888889,
+      "test_f1_macro": 0.3192223936,
+      "test_top3_accuracy": 0.5577777778,
+      "best_settings": {
+        "xgbclassifier__max_depth": 4
+      }
+    }
+  ]
+}
