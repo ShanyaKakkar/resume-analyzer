@@ -22,6 +22,15 @@ FEATURE_NAMES = [
 ]
 
 
+# Numbers that describe how well THIS resume fits THIS job. A score for the website
+# should move when the resume changes, so the final model uses only these.
+MATCH_FEATURES = ["tfidf", "semantic", "skill_coverage", "preferred_coverage",
+                  "keyword_coverage"]
+# Everything else: lengths and counts that describe only the job description or only
+# the resume. Useful for diagnosis, but risky in a live score.
+OTHER_FEATURES = [name for name in FEATURE_NAMES if name not in MATCH_FEATURES]
+
+
 def build_features(resume_text, jd_text, encoder=None):
     jd = analyze_jd(jd_text)
     resume_skills = extract_skills("", resume_text)

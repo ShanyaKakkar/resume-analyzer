@@ -1,12 +1,14 @@
 """Train random forest, logistic regression and XGBoost, compare them, keep the best.
 
-  python training/03_train_models.py
+  python training/03_train_models.py                  # all 12 numbers
+  python training/03_train_models.py --features match # only the resume-vs-job numbers
 
 Fair-play rules used here:
   * every model is tuned with 5-fold cross-validation on the TRAINING rows only
   * the best model is chosen by that cross-validation score, not by the test score
   * the test rows are used once, at the end, to report honest results
 """
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -25,8 +27,15 @@ from sklearn.utils.class_weight import compute_sample_weight
 from xgboost import XGBClassifier
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "backend"))
-from features import FEATURE_NAMES        # noqa: E402
+from features import FEATURE_NAMES, MATCH_FEATURES   # noqa: E402
 from scoring import baseline_score        # noqa: E402
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--features", choices=["all", "match"], default="all")
+args = parser.parse_args()
+FEATURES = FEATURE_NAMES if args.features == "all" else MATCH_FEATURES
+SUFFIX = "" if args.features == "all" else "_" + args.features
+print(f"Feature set: {args.features} ({len(FEATURES)} numbers)")
 
 CLASS_NAMES = ["No Fit", "Potential Fit", "Good Fit"]
 POINTS = np.array([0, 50, 100])           # 0-100 score = probability-weighted points
@@ -37,7 +46,7 @@ REPORTS_DIR.mkdir(exist_ok=True)
 
 def load(split):
     df = pd.read_csv(f"data/features_{split}.csv").dropna()
-    return df[FEATURE_NAMES], df["label"].astype(int)
+    return df[FEATURES], df["label"].astype(int)
 
 
 X_train, y_train = load("train")
@@ -97,7 +106,8 @@ table = pd.DataFrame(results)
 
 # ---- simple baselines to compare against ----
 majority = y_train.value_counts().idxmax()
-baseline_rows = X_test.apply(
+test_full = pd.read_csv("data/features_test.csv").dropna()   # all 12 numbers, for the baseline
+baseline_rows = test_full.apply(
     lambda r: baseline_score(r["tfidf"], r["semantic"],
                              r["skill_coverage"] if r["jd_has_skills"] else None), axis=1)
 print("\nBaselines on the test rows:")
@@ -114,7 +124,7 @@ print("  cv_f1_macro   quality on the training rows (used to pick the winner)")
 print("  test_*        quality on rows the models never saw during training")
 print("  test_spearman how well the 0-100 score orders No Fit < Potential < Good (1 = perfect)")
 print("  test_log_loss lower is better (are the probabilities trustworthy?)")
-table.to_csv(REPORTS_DIR / "model_comparison.csv", index=False)
+table.to_csv(REPORTS_DIR / f"model_comparison{SUFFIX}.csv", index=False)
 
 # ---- pick the winner by cross-validation score ----
 winner = table.sort_values("cv_f1_macro", ascending=False).iloc[0]["model"]
@@ -131,7 +141,7 @@ for name, model in fitted.items():
 print("\nTop features for each model:")
 for name, values in importances.items():
     order = np.argsort(values)[::-1][:5]
-    print(f"  {name}: " + ", ".join(f"{FEATURE_NAMES[i]} ({values[i]:.2f})" for i in order))
+    print(f"  {name}: " + ", ".join(f"{FEATURES[i]} ({values[i]:.2f})" for i in order))
 
 try:
     import matplotlib
@@ -151,30 +161,31 @@ try:
             for j in range(3):
                 ax.text(j, i, matrix[i, j], ha="center", va="center")
     fig.tight_layout()
-    fig.savefig(REPORTS_DIR / "confusion_matrices.png", dpi=150)
+    fig.savefig(REPORTS_DIR / f"confusion_matrices{SUFFIX}.png", dpi=150)
     plt.close(fig)
 
     fig, axes = plt.subplots(1, 3, figsize=(15, 4.5))
     for ax, (name, values) in zip(axes, importances.items()):
         order = np.argsort(values)
-        ax.barh([FEATURE_NAMES[i] for i in order], values[order], color="#B45309")
+        ax.barh([FEATURES[i] for i in order], values[order], color="#B45309")
         ax.set_title(f"{name}: feature importance")
     fig.tight_layout()
-    fig.savefig(REPORTS_DIR / "feature_importance.png", dpi=150)
+    fig.savefig(REPORTS_DIR / f"feature_importance{SUFFIX}.png", dpi=150)
     plt.close(fig)
     print("\nCharts saved in the reports folder.")
 except ImportError:
     print("\n(matplotlib is not installed, so no charts were made: pip install matplotlib)")
 
 # ---- save the winner ----
-joblib.dump({"model": fitted[winner], "name": winner, "features": FEATURE_NAMES},
+joblib.dump({"model": fitted[winner], "name": winner, "features": FEATURES},
             MODELS_DIR / "score_model.joblib")
 info = {
     "winner": winner,
-    "features": FEATURE_NAMES,
+    "feature_set": args.features,
+    "features": FEATURES,
     "classes": CLASS_NAMES,
     "points": POINTS.tolist(),
     "results": json.loads(table.to_json(orient="records")),
 }
 (MODELS_DIR / "score_model_info.json").write_text(json.dumps(info, indent=2))
-print(f"Saved the winner to {MODELS_DIR / 'score_model.joblib'}")
+print(f"Saved the winner to {MODELS_DIR / 'score_model.joblib'} (feature set: {args.features})")
