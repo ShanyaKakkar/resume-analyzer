@@ -1,0 +1,4 @@
+model,cv_accuracy,cv_f1_macro,test_accuracy,test_f1_macro,best_settings
+Logistic Regression,0.6851385390428211,0.6415820763457492,0.6975806451612904,0.6500436649322885,{'logisticregression__C': 30}
+Random Forest,0.7481108312342569,0.6850179869048303,0.7439516129032258,0.6748333231920065,{'randomforestclassifier__max_features': 'sqrt'}
+XGBoost,0.781360201511335,0.7304614692657924,0.7782258064516129,0.7346079824098958,{'xgbclassifier__max_depth': 4}
