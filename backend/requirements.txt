@@ -4,5 +4,4 @@ gunicorn
 pdfplumber
 python-docx
 scikit-learn
-sentence-transformers
 numpy
